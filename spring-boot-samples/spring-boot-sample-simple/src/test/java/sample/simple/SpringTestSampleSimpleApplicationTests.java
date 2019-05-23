@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,33 +16,30 @@
 
 package sample.simple;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link SampleSimpleApplication}.
  *
  * @author Dave Syer
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleSimpleApplication.class)
-public class SpringTestSampleSimpleApplicationTests {
+@SpringBootTest
+class SpringTestSampleSimpleApplicationTests {
 
 	@Autowired
 	ApplicationContext ctx;
 
 	@Test
-	public void testContextLoads() throws Exception {
-		assertNotNull(this.ctx);
-		assertTrue(this.ctx.containsBean("helloWorldService"));
-		assertTrue(this.ctx.containsBean("sampleSimpleApplication"));
+	void testContextLoads() {
+		assertThat(this.ctx).isNotNull();
+		assertThat(this.ctx.containsBean("helloWorldService")).isTrue();
+		assertThat(this.ctx.containsBean("sampleSimpleApplication")).isTrue();
 	}
 
 }

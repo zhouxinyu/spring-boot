@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,31 +16,21 @@
 
 package sample.amqp;
 
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Date;
+
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@Configuration
-@EnableAutoConfiguration
+@SpringBootApplication
+@RabbitListener(queues = "foo")
+@EnableScheduling
 public class SampleAmqpSimpleApplication {
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
-
-	@Autowired
-	private ConnectionFactory connectionFactory;
-
-	@Bean
-	public ScheduledAnnotationBeanPostProcessor scheduledAnnotationBeanPostProcessor() {
-		return new ScheduledAnnotationBeanPostProcessor();
-	}
 
 	@Bean
 	public Sender mySender() {
@@ -48,22 +38,17 @@ public class SampleAmqpSimpleApplication {
 	}
 
 	@Bean
-	public SimpleMessageListenerContainer container() {
-		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
-				this.connectionFactory);
-		Object listener = new Object() {
-			@SuppressWarnings("unused")
-			public void handleMessage(String foo) {
-				System.out.println(foo);
-			}
-		};
-		MessageListenerAdapter adapter = new MessageListenerAdapter(listener);
-		container.setMessageListener(adapter);
-		container.setQueueNames("foo");
-		return container;
+	public Queue fooQueue() {
+		return new Queue("foo");
 	}
 
-	public static void main(String[] args) throws Exception {
+	@RabbitHandler
+	public void process(@Payload String foo) {
+		System.out.println(new Date() + ": " + foo);
+	}
+
+	public static void main(String[] args) {
 		SpringApplication.run(SampleAmqpSimpleApplication.class, args);
 	}
+
 }

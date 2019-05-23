@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,51 +16,48 @@
 
 package sample.data.elasticsearch;
 
-import java.net.ConnectException;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.springframework.boot.test.OutputCapture;
-import org.springframework.core.NestedCheckedException;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.test.extension.OutputCapture;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link SampleElasticsearchApplication}.
  *
  * @author Artur Konczak
  */
-public class SampleElasticsearchApplicationTests {
+class SampleElasticsearchApplicationTests {
 
-	@Rule
-	public OutputCapture outputCapture = new OutputCapture();
+	@RegisterExtension
+	OutputCapture output = new OutputCapture();
 
 	@Test
-	public void testDefaultSettings() throws Exception {
+	void testDefaultSettings() {
 		try {
-			SampleElasticsearchApplication.main(new String[0]);
+			new SpringApplicationBuilder(SampleElasticsearchApplication.class).run();
 		}
-		catch (IllegalStateException ex) {
-			if (serverNotRunning(ex)) {
+		catch (Exception ex) {
+			if (!elasticsearchRunning(ex)) {
 				return;
 			}
+			throw ex;
 		}
-		String output = this.outputCapture.toString();
-		assertTrue("Wrong output: " + output,
-				output.contains("firstName='Alice', lastName='Smith'"));
+		assertThat(this.output).contains("firstName='Alice', lastName='Smith'");
 	}
 
-	private boolean serverNotRunning(IllegalStateException ex) {
-		@SuppressWarnings("serial")
-		NestedCheckedException nested = new NestedCheckedException("failed", ex) {
-		};
-		if (nested.contains(ConnectException.class)) {
-			Throwable root = nested.getRootCause();
-			if (root.getMessage().contains("Connection refused")) {
-				return true;
+	private boolean elasticsearchRunning(Exception ex) {
+		Throwable candidate = ex;
+		while (candidate != null) {
+			if (candidate instanceof NoNodeAvailableException) {
+				return false;
 			}
+			candidate = candidate.getCause();
 		}
-		return false;
+		return true;
 	}
 
 }

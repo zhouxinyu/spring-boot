@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,65 +18,61 @@ package sample.actuator.ui;
 
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.TestRestTemplate;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagementPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for separate management and main service ports.
  *
  * @author Dave Syer
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleActuatorUiApplication.class)
-@WebAppConfiguration
-@IntegrationTest({ "server.port=0", "management.port:0" })
-@DirtiesContext
-public class SampleActuatorUiApplicationPortTests {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
+		properties = { "management.server.port:0" })
+class SampleActuatorUiApplicationPortTests {
 
-	@Autowired
-	private SecurityProperties security;
+	@LocalServerPort
+	private int port;
 
-	@Value("${local.server.port}")
-	private int port = 9010;
-
-	@Value("${local.management.port}")
-	private int managementPort = 9011;
+	@LocalManagementPort
+	private int managementPort;
 
 	@Test
-	public void testHome() throws Exception {
-		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(
-				"http://localhost:" + this.port, String.class);
-		assertEquals(HttpStatus.OK, entity.getStatusCode());
+	void testHome() {
+		ResponseEntity<String> entity = new TestRestTemplate()
+				.getForEntity("http://localhost:" + this.port, String.class);
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
-	public void testMetrics() throws Exception {
+	void testMetrics() {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> entity = new TestRestTemplate().getForEntity(
-				"http://localhost:" + this.managementPort + "/metrics", Map.class);
-		assertEquals(HttpStatus.UNAUTHORIZED, entity.getStatusCode());
+				"http://localhost:" + this.managementPort + "/actuator/metrics",
+				Map.class);
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 	}
 
 	@Test
-	public void testHealth() throws Exception {
-		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(
-				"http://localhost:" + this.managementPort + "/health", String.class);
-		assertEquals(HttpStatus.OK, entity.getStatusCode());
-		assertEquals("{\"status\":\"UP\",\"application\":{\"status\":\"UP\"}}",
-				entity.getBody());
+	void testHealth() {
+		ResponseEntity<String> entity = new TestRestTemplate()
+				.withBasicAuth("user", getPassword()).getForEntity(
+						"http://localhost:" + this.managementPort + "/actuator/health",
+						String.class);
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(entity.getBody()).contains("\"status\":\"UP\"");
+	}
+
+	private String getPassword() {
+		return "password";
 	}
 
 }

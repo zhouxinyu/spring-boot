@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,33 +21,38 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.validation.constraints.NotBlank;
+
 import org.springframework.context.annotation.Description;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @Description("A controller for handling requests for hello messages")
 public class SampleController {
 
-	@Autowired
-	private HelloWorldService helloWorldService;
+	private final HelloWorldService helloWorldService;
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public SampleController(HelloWorldService helloWorldService) {
+		this.helloWorldService = helloWorldService;
+	}
+
+	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public Map<String, String> hello() {
 		return Collections.singletonMap("message",
 				this.helloWorldService.getHelloMessage());
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
+	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public Map<String, Object> olleh(@Validated Message message) {
-		Map<String, Object> model = new LinkedHashMap<String, Object>();
+		Map<String, Object> model = new LinkedHashMap<>();
 		model.put("message", message.getValue());
 		model.put("title", "Hello Home");
 		model.put("date", new Date());
@@ -72,6 +77,7 @@ public class SampleController {
 		public void setValue(String value) {
 			this.value = value;
 		}
+
 	}
 
 }
