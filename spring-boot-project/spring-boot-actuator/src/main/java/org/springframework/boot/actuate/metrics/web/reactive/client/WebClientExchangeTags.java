@@ -17,11 +17,15 @@
 package org.springframework.boot.actuate.metrics.web.reactive.client;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import io.micrometer.core.instrument.Tag;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus.Series;
 import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -37,15 +41,13 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 public final class WebClientExchangeTags {
 
-	private static final String URI_TEMPLATE_ATTRIBUTE = WebClient.class.getName()
-			+ ".uriTemplate";
+	private static final String URI_TEMPLATE_ATTRIBUTE = WebClient.class.getName() + ".uriTemplate";
 
 	private static final Tag IO_ERROR = Tag.of("status", "IO_ERROR");
 
 	private static final Tag CLIENT_ERROR = Tag.of("status", "CLIENT_ERROR");
 
-	private static final Pattern PATTERN_BEFORE_PATH = Pattern
-			.compile("^https?://[^/]+/");
+	private static final Pattern PATTERN_BEFORE_PATH = Pattern.compile("^https?://[^/]+/");
 
 	private static final Tag CLIENT_NAME_NONE = Tag.of("clientName", "none");
 
@@ -60,6 +62,18 @@ public final class WebClientExchangeTags {
 	private static final Tag OUTCOME_CLIENT_ERROR = Tag.of("outcome", "CLIENT_ERROR");
 
 	private static final Tag OUTCOME_SERVER_ERROR = Tag.of("outcome", "SERVER_ERROR");
+
+	private static final Map<Series, Tag> SERIES_OUTCOMES;
+
+	static {
+		Map<Series, Tag> seriesOutcomes = new HashMap<>();
+		seriesOutcomes.put(Series.INFORMATIONAL, OUTCOME_INFORMATIONAL);
+		seriesOutcomes.put(Series.SUCCESSFUL, OUTCOME_SUCCESS);
+		seriesOutcomes.put(Series.REDIRECTION, OUTCOME_REDIRECTION);
+		seriesOutcomes.put(Series.CLIENT_ERROR, OUTCOME_CLIENT_ERROR);
+		seriesOutcomes.put(Series.SERVER_ERROR, OUTCOME_SERVER_ERROR);
+		SERIES_OUTCOMES = Collections.unmodifiableMap(seriesOutcomes);
+	}
 
 	private WebClientExchangeTags() {
 	}
@@ -80,8 +94,7 @@ public final class WebClientExchangeTags {
 	 * @return the uri tag
 	 */
 	public static Tag uri(ClientRequest request) {
-		String uri = (String) request.attribute(URI_TEMPLATE_ATTRIBUTE)
-				.orElseGet(() -> request.url().getPath());
+		String uri = (String) request.attribute(URI_TEMPLATE_ATTRIBUTE).orElseGet(() -> request.url().getPath());
 		return Tag.of("uri", extractPath(uri));
 	}
 
@@ -97,7 +110,7 @@ public final class WebClientExchangeTags {
 	 * @return the status tag
 	 */
 	public static Tag status(ClientResponse response) {
-		return Tag.of("status", String.valueOf(response.statusCode().value()));
+		return Tag.of("status", String.valueOf(response.rawStatusCode()));
 	}
 
 	/**
@@ -127,7 +140,7 @@ public final class WebClientExchangeTags {
 
 	/**
 	 * Creates an {@code outcome} {@code Tag} derived from the
-	 * {@link ClientResponse#statusCode() status} of the given {@code response}.
+	 * {@link ClientResponse#rawStatusCode() status} of the given {@code response}.
 	 * @param response the response
 	 * @return the outcome tag
 	 * @since 2.2.0
@@ -135,28 +148,16 @@ public final class WebClientExchangeTags {
 	public static Tag outcome(ClientResponse response) {
 		try {
 			if (response != null) {
-				HttpStatus status = response.statusCode();
-				if (status.is1xxInformational()) {
-					return OUTCOME_INFORMATIONAL;
-				}
-				if (status.is2xxSuccessful()) {
-					return OUTCOME_SUCCESS;
-				}
-				if (status.is3xxRedirection()) {
-					return OUTCOME_REDIRECTION;
-				}
-				if (status.is4xxClientError()) {
-					return OUTCOME_CLIENT_ERROR;
-				}
-				if (status.is5xxServerError()) {
-					return OUTCOME_SERVER_ERROR;
+				Series series = HttpStatus.Series.resolve(response.rawStatusCode());
+				if (series != null) {
+					return SERIES_OUTCOMES.getOrDefault(series, OUTCOME_UNKNOWN);
 				}
 			}
-			return OUTCOME_UNKNOWN;
 		}
-		catch (IllegalArgumentException exc) {
-			return OUTCOME_UNKNOWN;
+		catch (IllegalArgumentException ex) {
+			// Continue
 		}
+		return OUTCOME_UNKNOWN;
 	}
 
 }
