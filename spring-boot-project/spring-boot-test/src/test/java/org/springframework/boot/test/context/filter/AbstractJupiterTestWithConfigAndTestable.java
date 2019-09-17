@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.boot.context.properties.scan.invalid.c;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+package org.springframework.boot.test.context.filter;
 
-/**
- * @author Madhura Bhave
- */
-public class InvalidConfiguration {
+import org.junit.platform.commons.annotation.Testable;
 
-	@Component
-	@ConfigurationProperties(prefix = "b")
-	static class MyProperties {
+import org.springframework.context.annotation.Configuration;
+
+@Testable
+public abstract class AbstractJupiterTestWithConfigAndTestable {
+
+	@Configuration(proxyBeanMethods = false)
+	static class Config {
 
 	}
 

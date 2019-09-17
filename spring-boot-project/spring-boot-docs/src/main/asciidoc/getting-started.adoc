@@ -182,7 +182,8 @@ In those cases, see <<using-boot-maven-without-a-parent>> for an alternative sol
 
 [[getting-started-gradle-installation]]
 ==== Gradle Installation
-Spring Boot is compatible with 5.x. 4.10 is also supported but this support is deprecated and will be removed in a future release.
+Spring Boot is compatible with 5.x.
+4.10 is also supported but this support is deprecated and will be removed in a future release.
 If you do not already have Gradle installed, you can follow the instructions at https://gradle.org.
 
 Spring Boot dependencies can be declared by using the `org.springframework.boot` `group`.
@@ -657,7 +658,7 @@ An uber jar packages all the classes from all the application's dependencies int
 The problem with this approach is that it becomes hard to see which libraries are in your application.
 It can also be problematic if the same filename is used (but with different content) in multiple jars.
 
-Spring Boot takes a <<appendix.adoc#executable-jar, different approach>> and lets you actually nest jars directly.
+Spring Boot takes a <<appendix-executable-jar-format.adoc#executable-jar, different approach>> and lets you actually nest jars directly.
 ****
 
 To create an executable jar, we need to add the `spring-boot-maven-plugin` to our `pom.xml`.
