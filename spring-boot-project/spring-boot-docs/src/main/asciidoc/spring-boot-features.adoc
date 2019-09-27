@@ -349,7 +349,7 @@ Property values can be injected directly into your beans by using the `@Value` a
 Spring Boot uses a very particular `PropertySource` order that is designed to allow sensible overriding of values.
 Properties are considered in the following order:
 
-. <<using-boot-devtools-globalsettings,Devtools global settings properties>> in the `$HOME/.config/spring-boot` folder when devtools is active.
+. <<using-spring-boot.adoc#using-boot-devtools-globalsettings,Devtools global settings properties>> in the `$HOME/.config/spring-boot` folder when devtools is active.
 . {spring-framework-api}/test/context/TestPropertySource.html[`@TestPropertySource`] annotations on your tests.
 . `properties` attribute on your tests.
   Available on {spring-boot-test-module-api}/context/SpringBootTest.html[`@SpringBootTest`] and the <<boot-features-testing-spring-boot-applications-testing-autoconfigured-tests,test annotations for testing a particular slice of your application>>.
@@ -556,7 +556,7 @@ See the _<<howto.adoc#howto-use-short-command-line-arguments>>_ how-to for detai
 === Encrypting Properties
 Spring Boot does not provide any built in support for encrypting property values, however, it does provide the hook points necessary to modify values contained in the Spring `Environment`.
 The `EnvironmentPostProcessor` interface allows you to manipulate the `Environment` before the application starts.
-See <<howto-customize-the-environment-or-application-context>> for details.
+See <<howto.adoc#howto-customize-the-environment-or-application-context>> for details.
 
 If you're looking for a secure way to store credentials and passwords, the https://cloud.spring.io/spring-cloud-vault/[Spring Cloud Vault] project provides support for storing externalized configuration in https://www.vaultproject.io/[HashiCorp Vault].
 
@@ -727,7 +727,7 @@ For example, consider the following config in a file:
 	      password: "secret"
 ----
 
-If you run the application with the arguments `--spring.profiles.active=dev" you might expect `security.user.password` to be set to "`secret`", but this is not the case.
+If you run the application with the argument `--spring.profiles.active=dev` you might expect `security.user.password` to be set to "`secret`", but this is not the case.
 
 The nested document will be filtered because the main file is named `application-dev.yml`.
 It is already considered to be profile-specific, and nested documents will be ignored.
@@ -1444,7 +1444,7 @@ For example, when an application with the following properties is run by using t
 ----
 
 NOTE: Remember that the `spring.profiles` property can be defined in a YAML document to determine when this particular document is included in the configuration.
-See <<howto-change-configuration-depending-on-the-environment>> for more details.
+See <<howto.adoc#howto-change-configuration-depending-on-the-environment>> for more details.
 
 
 
@@ -1675,13 +1675,10 @@ Spring Boot includes the following pre-defined logging groups that can be used o
 | Name | Loggers
 
 | web
-| `org.springframework.core.codec`, `org.springframework.http`, `org.springframework.web`
+| `org.springframework.core.codec`, `org.springframework.http`, `org.springframework.web`, `org.springframework.boot.actuate.endpoint.web`, `org.springframework.boot.web.servlet.ServletContextInitializerBeans`
 
 | sql
 | `org.springframework.jdbc.core`, `org.hibernate.SQL`, `org.jooq.tools.LoggerListener`
-
-| sql
-| `org.springframework.jdbc.core`, `org.hibernate.SQL`
 |===
 
 
@@ -2411,9 +2408,9 @@ Note that doing so disables the `ObjectMapper` customization described earlier.
 ==== CORS Support
 https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) is a https://www.w3.org/TR/cors/[W3C specification] implemented by https://caniuse.com/#feat=cors[most browsers] that lets you specify in a flexible way what kind of cross-domain requests are authorized., instead of using some less secure and less powerful approaches such as IFRAME or JSONP.
 
-As of version 4.2, Spring MVC {spring-framework-docs}web.html#cors[supports CORS].
-Using {spring-framework-docs}web.html#controller-method-cors-configuration[controller method CORS configuration] with {spring-framework-api}/web/bind/annotation/CrossOrigin.html[`@CrossOrigin`] annotations in your Spring Boot application does not require any specific configuration.
-{spring-framework-docs}web.html#global-cors-configuration[Global CORS configuration] can be defined by registering a `WebMvcConfigurer` bean with a customized `addCorsMappings(CorsRegistry)` method, as shown in the following example:
+As of version 4.2, Spring MVC {spring-framework-docs}web.html#mvc-cors[supports CORS].
+Using {spring-framework-docs}web.html#mvc-cors-controller[controller method CORS configuration] with {spring-framework-api}/web/bind/annotation/CrossOrigin.html[`@CrossOrigin`] annotations in your Spring Boot application does not require any specific configuration.
+{spring-framework-docs}web.html#mvc-cors-global[Global CORS configuration] can be defined by registering a `WebMvcConfigurer` bean with a customized `addCorsMappings(CorsRegistry)` method, as shown in the following example:
 
 [source,java,indent=0]
 ----
@@ -2521,7 +2518,7 @@ The auto-configuration adds the following features on top of Spring's defaults:
 * Configuring codecs for `HttpMessageReader` and `HttpMessageWriter` instances (described <<boot-features-webflux-httpcodecs,later in this document>>).
 * Support for serving static resources, including support for WebJars (described <<boot-features-spring-mvc-static-content,later in this document>>).
 
-If you want to keep Spring Boot WebFlux features and you want to add additional {spring-framework-docs}web.html#web-reactive[WebFlux configuration], you can add your own `@Configuration` class of type `WebFluxConfigurer` but *without* `@EnableWebFlux`.
+If you want to keep Spring Boot WebFlux features and you want to add additional {spring-framework-docs}web-reactive.html#webflux-config[WebFlux configuration], you can add your own `@Configuration` class of type `WebFluxConfigurer` but *without* `@EnableWebFlux`.
 
 If you want to take complete control of Spring WebFlux, you can add your own `@Configuration` annotated with `@EnableWebFlux`.
 
@@ -2933,31 +2930,9 @@ You can learn more about the resource configuration on the client side in the <<
 https://rsocket.io[RSocket] is a binary protocol for use on byte stream transports.
 It enables symmetric interaction models via async message passing over a single connection.
 
-Spring Framework, with the Spring Messaging module supports RSocket both on the server and the client side.
-On the server side, it lets you create special `@Controller` beans to handle incoming RSocket messages.
-Methods in your controller are mapped to RSocket routes by using `@MessageMapping` annotations.
 
-The following code shows a typical `@Controller`:
-
-[source,java,indent=0]
-----
-	@Controller
-	public class MyRSocketController {
-
-		@MessageMapping("chat.room.{name}")
-		public Flux<ChatMessages> enterChatRoom(@DestinationVariable String chatRoom,
-				Flux<ChatMessages> messages) {
-			// ...
-		}
-
-		@MessageMapping("users.\{user}.info")
-		Mono<ChatUserInfo> getUserInfo(@DestinationVariable String user) {
-			// ...
-		}
-
-	}
-----
-
+The `spring-messaging` module of the Spring Framework provides support for RSocket requesters and responders, both on the client and on the server side.
+See the {spring-framework-docs}web-reactive.html#rsocket-spring[RSocket section] of the Spring Framework reference for more details, including an overview of the RSocket protocol.
 
 
 [[boot-features-rsocket-strategies-auto-configuration]]
@@ -2969,21 +2944,21 @@ By default, the auto-configuration will try to configure the following (in order
 . JSON codecs with Jackson
 
 The `spring-boot-starter-rsocket` starter provides both dependencies.
+Check out the <<boot-features-json-jackson,Jackson support section>> to know more about customization possibilities.
 
 Developers can customize the `RSocketStrategies` component by creating beans that implement the `RSocketStrategiesCustomizer` interface.
 Note that their `@Order` is important, as it determines the order of codecs.
 
 
-
 [[boot-features-rsocket-server-auto-configuration]]
 === RSocket server Auto-configuration
-Spring Boot provides auto-configuration for RSocket servers.
+Spring Boot provides RSocket server auto-configuration.
 The required dependencies are provided by the `spring-boot-starter-rsocket`.
 
-Spring Boot will start an RSocket server as a new embedded server in your application, or will plug the RSocket infrastructure into an existing reactive Web server.
+Spring Boot allows exposing RSocket over WebSocket from a WebFlux server, or standing up an independent RSocket server.
 This depends on the type of application and its configuration.
 
-In case of a WebFlux application (i.e. of type `WebApplicationType.REACTIVE`), the RSocket server will be plugged into the existing Web Server only if the following properties match:
+For WebFlux application (i.e. of type `WebApplicationType.REACTIVE`), the RSocket server will be plugged into the Web Server only if the following properties match:
 
 [source,properties,indent=0,subs="verbatim,quotes,attributes"]
 ----
@@ -2992,7 +2967,9 @@ In case of a WebFlux application (i.e. of type `WebApplicationType.REACTIVE`), t
 	#spring.rsocket.server.port= # no port is defined
 ----
 
-The only other way to create an RSocket server is to start an independent, embedded RSocket server.
+WARNING: Plugging RSocket into a web server is only supported with Reactor Netty, as RSocket itself is built with that library.
+
+Alternatively, an RSocket TCP or websocket server is started as an independent, embedded server.
 Besides the dependency requirements, the only required configuration is to define a port for that server:
 
 [source,properties,indent=0,subs="verbatim,quotes,attributes"]
@@ -3007,23 +2984,19 @@ Besides the dependency requirements, the only required configuration is to defin
 === Spring Messaging RSocket support
 Spring Boot will auto-configure the Spring Messaging infrastructure for RSocket.
 
-An `RSocketStrategies` bean is created to provide encoding and decoding support for RSocket messages.
-By default, Spring Boot will try to auto-configure JSON support with Jackson for `application/json` and `"application/*+json"` media types.
-Check out the <<boot-features-json-jackson,Jackson support section>> to know more about customization possibilities.
-
-Developers can create `RSocketStrategiesCustomizer` beans to add other strategies, assuming there are `Encoder` and `Decoder` implementations available.
-
+This means that Spring Boot will create a `RSocketMessageHandler` bean that will handle RSocket requests to your application.
 
 
 [[boot-features-rsocket-requester]]
 === Calling RSocket Services with `RSocketRequester`
 Once the `RSocket` channel is established between server and client, any party can send or receive requests to the other.
 
-As a server, you can get injected an `RSocketRequester` instance on any handler method of an RSocket `@Controller`.
+As a server, you can get injected with an `RSocketRequester` instance on any handler method of an RSocket `@Controller`.
 As a client, you need to configure and establish an RSocket connection first.
 Spring Boot auto-configures an `RSocketRequester.Builder` for such cases with the expected codecs.
 
-The `RSocketRequester.Builder` instance is a prototype bean, meaning each injection point will provide you with a new instance - this is done on purpose since this builder is stateful and you shouldn't create requesters with different setups using the same instance.
+The `RSocketRequester.Builder` instance is a prototype bean, meaning each injection point will provide you with a new instance .
+This is done on purpose since this builder is stateful and you shouldn't create requesters with different setups using the same instance.
 
 The following code shows a typical example:
 
@@ -3036,7 +3009,7 @@ The following code shows a typical example:
 
 		public MyService(RSocketRequester.Builder rsocketRequesterBuilder) {
 			this.rsocketRequester = rsocketRequesterBuilder
-					.connectTcp("example.org", 9090).block();
+					.connectTcp("example.org", 9898).block();
 		}
 
 		public Mono<User> someRSocketCall(String name) {
@@ -5280,7 +5253,7 @@ You can customize this behaviour using the `spring.kafka.streams.auto-startup` p
 
 [[boot-features-kafka-extra-props]]
 ==== Additional Kafka Properties
-The properties supported by auto configuration are shown in <<common-application-properties>>.
+The properties supported by auto configuration are shown in <<appendix-application-properties.adoc#common-application-properties>>.
 Note that, for the most part, these properties (hyphenated or camelCase) map directly to the Apache Kafka dotted properties.
 Refer to the Apache Kafka documentation for details.
 
@@ -5747,7 +5720,7 @@ Those default settings can be fine-tuned using the `spring.task.execution` names
 
 [source,properties,indent=0]
 ----
-	spring.task.execution.pool.max-threads=16
+	spring.task.execution.pool.max-size=16
 	spring.task.execution.pool.queue-capacity=100
 	spring.task.execution.pool.keep-alive=10s
 ----
@@ -5958,7 +5931,7 @@ When testing Spring Boot applications, this is often not required.
 Spring Boot's `@*Test` annotations search for your primary configuration automatically whenever you do not explicitly define one.
 
 The search algorithm works up from the package that contains the test until it finds a class annotated with `@SpringBootApplication` or `@SpringBootConfiguration`.
-As long as you <<using-boot-structuring-your-code, structured your code>> in a sensible way, your main configuration is usually found.
+As long as you <<using-spring-boot.adoc#using-boot-structuring-your-code, structured your code>> in a sensible way, your main configuration is usually found.
 
 [NOTE]
 ====
@@ -6042,8 +6015,8 @@ Testing within a mocked environment is usually faster than running with a full S
 However, since mocking occurs at the Spring MVC layer, code that relies on lower-level Servlet container behavior cannot be directly tested with MockMvc.
 
 For example, Spring Boot's error handling is based on the "`error page`" support provided by the Servlet container.
-This means that, whilst you can test your MVC layer throws and handles exceptions as expected, you cannot directly test that a specific <<#boot-features-error-handling-custom-error-pages, custom error page>> is rendered.
-If you need to tests these lower-level concerns, you can start a fully running server as described in the next section.
+This means that, whilst you can test your MVC layer throws and handles exceptions as expected, you cannot directly test that a specific <<boot-features-error-handling-custom-error-pages, custom error page>> is rendered.
+If you need to test these lower-level concerns, you can start a fully running server as described in the next section.
 ====
 
 
@@ -6053,7 +6026,7 @@ If you need to tests these lower-level concerns, you can start a fully running s
 If you need to start a full running server, we recommend that you use random ports.
 If you use `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`, an available port is picked at random each time your test runs.
 
-The `@LocalServerPort` annotation can be used to <<howto-discover-the-http-port-at-runtime,inject the actual port used>> into your test.
+The `@LocalServerPort` annotation can be used to <<howto.adoc#howto-discover-the-http-port-at-runtime,inject the actual port used>> into your test.
 For convenience, tests that need to make REST calls to the started server can additionally `@Autowire` a {spring-framework-docs}testing.html#webtestclient-tests[`WebTestClient`], which resolves relative links to the running server and comes with a dedicated API for verifying responses, as shown in the following example:
 
 [source,java,indent=0]
@@ -7631,7 +7604,6 @@ This makes it possible to use `@BeforeClass` and `@AfterClass` annotations on no
 
 JUnit 5 is the default and the vintage engine is provided for backward compatibility with JUnit 4.
 If you don't use it, exclude `org.junit.vintange:junit-vintage-engine`.
-See the {junit5-docs}/#dependency-metadata-junit-jupiter-samples[JUnit 5 documentation] for more details.
 You also need to {junit5-docs}/#writing-tests-test-instance-lifecycle-changing-default[switch test instance lifecycle to "per-class"].
 
 To mock Kotlin classes, https://mockk.io/[MockK] is recommended.
