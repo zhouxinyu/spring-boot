@@ -48,7 +48,7 @@ import org.springframework.context.annotation.Import;
  * <p>
  * This configuration class is active only when the RabbitMQ and Spring AMQP client
  * libraries are on the classpath.
- * <P>
+ * <p>
  * Registers the following beans:
  * <ul>
  * <li>{@link org.springframework.amqp.rabbit.core.RabbitTemplate RabbitTemplate} if there
@@ -124,8 +124,9 @@ public class RabbitAutoConfiguration {
 			map.from(properties::determineVirtualHost).whenNonNull().to(factory::setVirtualHost);
 			map.from(properties::getRequestedHeartbeat).whenNonNull().asInt(Duration::getSeconds)
 					.to(factory::setRequestedHeartbeat);
+			map.from(properties::getRequestedChannelMax).to(factory::setRequestedChannelMax);
 			RabbitProperties.Ssl ssl = properties.getSsl();
-			if (ssl.isEnabled()) {
+			if (ssl.determineEnabled()) {
 				factory.setUseSSL(true);
 				map.from(ssl::getAlgorithm).whenNonNull().to(factory::setSslAlgorithm);
 				map.from(ssl::getKeyStoreType).to(factory::setKeyStoreType);

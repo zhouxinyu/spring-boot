@@ -81,7 +81,7 @@ They use a simple JSON format with items categorized under either "`groups`" or 
 Each "`property`" is a configuration item that the user specifies with a given value.
 For example, `server.port` and `server.address` might be specified in `application.properties`, as follows:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
 	server.port=9090
 	server.address=127.0.0.1
@@ -94,7 +94,7 @@ NOTE: It is not required that every "`property`" has a "`group`".
 Some properties might exist in their own right.
 
 Finally, "`hints`" are additional information used to assist the user in configuring a given property.
-For example, when a developer is configuring the `spring.jpa.hibernate.ddl-auto` property, a tool can use the hints to offer some auto-completion help for the `none`, `validate`, `update`, `create`, and `create-drop` values.
+For example, when a developer is configuring the configprop:spring.jpa.hibernate.ddl-auto[] property, a tool can use the hints to offer some auto-completion help for the `none`, `validate`, `update`, `create`, and `create-drop` values.
 
 
 
@@ -121,7 +121,7 @@ The JSON object contained in the `groups` array can contain the attributes shown
 | `description`
 | String
 | A short description of the group that can be displayed to users.
-  If not description is available, it may be omitted.
+  If no description is available, it may be omitted.
   It is recommended that descriptions be short paragraphs, with the first line providing a concise summary.
   The last line in the description should end with a period (`.`).
 
@@ -163,7 +163,7 @@ The JSON object contained in the `properties` array can contain the attributes d
 
 | `description`
 | String
-| A short description of the group that can be displayed to users.
+| A short description of the property that can be displayed to users.
   If no description is available, it may be omitted.
   It is recommended that descriptions be short paragraphs, with the first line providing a concise summary.
   The last line in the description should end with a period (`.`).
@@ -752,12 +752,12 @@ Consider the following class:
 
 [source,java,indent=0,subs="verbatim,quotes,attributes"]
 ----
-	@ConfigurationProperties(prefix="acme.messaging")
+	@ConfigurationProperties(prefix = "acme.messaging")
 	public class MessagingProperties {
 
-		private List<String> addresses = new ArrayList<>(Arrays.asList("a", "b")) ;
+		private List<String> addresses = new ArrayList<>(Arrays.asList("a", "b"));
 
-		private ContainerType = ContainerType.SIMPLE;
+		private ContainerType containerType = ContainerType.SIMPLE;
 
 		// ... getter and setters
 

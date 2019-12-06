@@ -37,6 +37,9 @@ do as they were designed before this was clarified.
 | https://arangodb.com/[ArangoDB]
 | https://github.com/arangodb/spring-boot-starter
 
+| https://line.github.io/armeria/[Armeria]
+| https://github.com/line/armeria/
+
 | https://axoniq.io[Axon Framework]
 | https://github.com/AxonFramework/AxonFramework
 
@@ -135,6 +138,9 @@ do as they were designed before this was clarified.
 
 | https://developer.nexmo.com/[Nexmo]
 | https://github.com/nexmo/nexmo-spring-boot-starter
+
+| https://funthomas424242.github.io/nitrite-spring-boot-starter/[Nitrite Database]
+| https://github.com/FunThomas424242/nitrite-spring-boot-starter
 
 | https://github.com/nutzam/nutz[Nutz]
 | https://github.com/nutzam/nutzmore

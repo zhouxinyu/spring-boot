@@ -163,20 +163,6 @@ The classpath is deduced from the nested jars.
 
 
 
-[[executable-jar-exploded-archives]]
-=== Exploded Archives
-Certain PaaS implementations may choose to unpack archives before they run.
-For example, Cloud Foundry operates this way.
-You can run an unpacked archive by starting the appropriate launcher, as follows:
-
-[indent=0]
-----
-	$ unzip -q myapp.jar
-	$ java org.springframework.boot.loader.JarLauncher
-----
-
-
-
 [[executable-jar-property-launcher-features]]
 == `PropertiesLauncher` Features
 `PropertiesLauncher` has a few special features that can be enabled with external properties (System properties, environment variables, manifest entries, or `loader.properties`).

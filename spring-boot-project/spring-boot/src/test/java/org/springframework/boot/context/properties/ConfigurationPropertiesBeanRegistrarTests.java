@@ -90,7 +90,8 @@ class ConfigurationPropertiesBeanRegistrarTests {
 
 	}
 
-	@ConfigurationProperties(prefix = "valuecp")
+	@ConstructorBinding
+	@ConfigurationProperties("valuecp")
 	static class ValueObjectConfigurationProperties {
 
 		ValueObjectConfigurationProperties(String name) {
